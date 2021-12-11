@@ -24,3 +24,6 @@ ogn_core-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Log files.
+*.log
