@@ -1,7 +1,8 @@
 import Config
 
 config :ogn_core,
-  env: "Release"
+  env: "Release",
+  toml_config: "config/prod.toml"
 
 config :logger,
   level: :info,

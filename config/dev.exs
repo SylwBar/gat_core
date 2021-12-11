@@ -1,7 +1,8 @@
 import Config
 
 config :ogn_core,
-  env: "Dev"
+  env: "Dev",
+  toml_config: "config/dev.toml"
 
 config :logger,
   level: :debug,
