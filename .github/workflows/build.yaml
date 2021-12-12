@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Run system tests in docker containers
     steps:
+      - uses: actions/checkout@v2
       - name: start servers
         run: docker-compose up -d
       - name: execute tests (placholder)
