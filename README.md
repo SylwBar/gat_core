@@ -2,6 +2,7 @@
 
 Project related to Open Glider Network (OGN).
 The main idea is to add more functionalities to OGN packet routing system which is currently based on APRS protocol.
+
 Project goals:
 - replace APRS with more compact format, better suited for aviation,
 - add features that are hard to achieve using APRS based servers: packet delays, emergency services,
@@ -9,7 +10,7 @@ Project goals:
 
 ## Configurations
 
-The project uses Elixir's Config module to configure project depending on situation. There are two configurations defined:
+The project uses Elixir's Config module to configure project depending on situation. There are three configurations defined:
 * dev - default configuration, used for development,
 * test - configuration used during testing (mix test),
 * prod - configuration that should be selected for building project for target host.
@@ -19,9 +20,11 @@ Selecting configuration is done using MIX_ENV shell variable, dev is selected by
 ## Compiling for development and tests
 
 First, dependencies should be downloaded:
-$ mix deps.get
+```
+  $ mix deps.get
+```
 
-Then:
+then:
 * to start OGN Core with interactive Elixir shell (IEx) attached:
 ```
 $ iex -S mix
@@ -61,4 +64,10 @@ The known commands are:
     pid            Prints the operating system PID of the running system via a remote command
     version        Prints the release name and version to be booted
 ```
+## Testing
 
+Basic tests suite is executed using mix:
+
+```
+  $ mix test
+```
