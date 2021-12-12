@@ -15,17 +15,21 @@ defmodule OGNCore.Application do
       toml_file = Application.fetch_env!(:ogn_core, :toml_config)
       Logger.info("Reading configuration file: #{toml_file}")
       toml_config = Toml.decode_file!(toml_file)
-      server_name = Map.get(toml_config, "server_name")
+      core_server_name = Map.get(toml_config, "server_name")
 
-      if server_name == nil do
+      if core_server_name == nil do
         raise "No server name provided in configuration file"
       end
 
-      Logger.info("OGN Core server name: #{server_name}")
+      Logger.info("OGN Core server name: #{core_server_name}")
+      aprs_config = Map.get(toml_config, "APRS")
+
+      if aprs_config == nil do
+        raise "No APRS configuration provided in configuration file"
+      end
 
       children = [
-        # Starts a worker by calling: OGNCore.Worker.start_link(arg)
-        # {OGNCore.Worker, arg}
+        {APRSConnection, [aprs_config, core_server_name]}
       ]
 
       # See https://hexdocs.pm/elixir/Supervisor.html

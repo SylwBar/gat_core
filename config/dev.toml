@@ -1,1 +1,6 @@
 server_name = "Core1Dev"
+
+[APRS]
+server_addr = "aprs.glidernet.org"
+server_port = 14580
+client_id = 1
