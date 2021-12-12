@@ -17,3 +17,15 @@ jobs:
           elixir-version: ${{matrix.elixir}}
       - run: mix deps.get
       - run: mix test
+
+  system-test:
+    runs-on: ubuntu-latest
+    name: Run system tests in docker containers
+    steps:
+      - uses: actions/checkout@v2
+      - name: start servers
+        run: docker-compose up -d
+      - name: execute tests (placholder)
+        run: echo "some netcat or tcpreply - it should play traffic from base stations and at the same time get ouput from ogn_core"
+      - name: stop servers
+        run: docker-compose down
