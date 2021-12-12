@@ -1,13 +1,8 @@
 import Config
 
 config :ogn_core,
-  env: "Dev"
+  env: "Test",
+  toml_config: "config/test.toml"
 
 config :logger,
-  level: :debug,
-  backends: [{LoggerFileBackend, :debug_log}, :console]
-
-# configuration for the {LoggerFileBackend, :debug_log} backend
-config :logger, :debug_log,
-  format: "$time $metadata[$level] $levelpad$message\n",
-  path: "debug.log"
+  level: :info
