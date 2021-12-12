@@ -22,8 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Run system tests in docker containers
     steps:
-      - name: build docker
-        run: docker build -t ogn_core:latest .
       - name: start servers
         run: docker-compose up -d
       - name: execute tests (placholder)
