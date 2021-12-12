@@ -10,7 +10,8 @@ Project goals:
 ## Configurations
 
 The project uses Elixir's Config module to configure project depending on situation. There are two configurations defined:
-* dev - default configuration, used for development and tests,
+* dev - default configuration, used for development,
+* test - configuration used during testing (mix test),
 * prod - configuration that should be selected for building project for target host.
 
 Selecting configuration is done using MIX_ENV shell variable, dev is selected by default.
