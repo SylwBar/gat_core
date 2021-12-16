@@ -3,4 +3,4 @@ server_name = "Core1Test"
 [APRS]
 server_addr = "localhost"
 server_port = 14580
-client_id = 1
+client_id = 999

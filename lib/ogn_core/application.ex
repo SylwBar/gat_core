@@ -29,7 +29,7 @@ defmodule OGNCore.Application do
       end
 
       children = [
-        {APRSConnection, [aprs_config, core_server_name]}
+        {APRSConnection, [aprs_config]}
       ]
 
       # See https://hexdocs.pm/elixir/Supervisor.html
