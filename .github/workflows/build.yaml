@@ -16,7 +16,7 @@ jobs:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
       - run: mix deps.get
-      - run: mix test
+      - run: mix test --no-start
 
   system-test:
     runs-on: ubuntu-latest
