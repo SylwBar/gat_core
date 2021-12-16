@@ -71,3 +71,23 @@ Basic tests suite is executed using mix:
 ```
   $ mix test
 ```
+
+## Configuration
+Configuration files are read from config directory, depending on configuration selected.
+
+TOML format was used, example configuration file:
+
+```
+server_name = "Core1"
+
+[APRS]
+server_addr = "aprs.glidernet.org"
+server_port = 14580
+client_id = 999
+```
+
+options:
+- server_name: server identifier used in OGNCore network,
+- APRS/server_addr: APRS server used by OGNCore server,
+- APRS/server_port: TCP port of APRS server,
+- APRS/client_id: numeric suffix of APRS login, full login will be CORE-999. 
