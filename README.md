@@ -72,10 +72,11 @@ Basic tests suite is executed using mix:
   $ mix test
 ```
 
-## Configuration
-Configuration files are read from config directory, depending on configuration selected.
+## OGNCore configuration
+Configuration files are read from "config" directory.
+Different files are selected for different mix configurations.
 
-TOML format was used, example configuration file:
+Example configuration file (TOML format):
 
 ```
 server_name = "Core1"
