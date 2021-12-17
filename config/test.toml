@@ -1,4 +1,6 @@
+[Core]
 server_name = "Core1Test"
+server_port = 8701
 
 [APRS]
 server_addr = "localhost"
