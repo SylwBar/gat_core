@@ -1,7 +1,7 @@
 defmodule OGNCore.APRSConnection do
-  @reconnect_timer_msec 10 * 1000
-  @client_keep_alive_timer_msec 120 * 1000
-  @server_keep_alive_timer_msec 60 * 1000
+  @reconnect_timer_msec 10_000
+  @client_keep_alive_timer_msec 120_000
+  @server_keep_alive_timer_msec 60_000
 
   use GenServer
   require Logger
