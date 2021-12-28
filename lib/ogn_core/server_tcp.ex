@@ -44,9 +44,9 @@ defmodule OGNCore.ServerTCP do
     case :gen_tcp.recv(socket, 0, @login_timeout_ms) do
       {:ok, data} ->
         case CBOR.decode(data) do
-          # Valid messages: local link, with msg_body map
-          {:ok, [0, 0, _msg_type, msg_body, []] = packet, <<>>} when is_map(msg_body) ->
-            handle_cbor(packet, socket, server_name)
+          # Valid handle_login_request message: local link, with msg_body map
+          {:ok, [0, 0, 1, msg_body, []], <<>>} when is_map(msg_body) ->
+            handle_login_request(msg_body, socket, server_name)
 
           error ->
             Logger.debug("OGNCore.ServerTCP/handle: CBOR error #{inspect(error)}")
@@ -60,7 +60,7 @@ defmodule OGNCore.ServerTCP do
   end
 
   # msg-type 0/1 : login request
-  defp handle_cbor([0, 0, 1, msg_body, []], socket, server_name) do
+  defp handle_login_request(msg_body, socket, server_name) do
     object_id = Map.get(msg_body, 1)
 
     if object_id == nil do
@@ -86,15 +86,11 @@ defmodule OGNCore.ServerTCP do
           :ok = :gen_tcp.controlling_process(socket, connection_pid)
 
         :no_auth ->
+          Logger.info("OGNCore.ServerTCP no_auth login: #{inspect(tuple_id)}")
           reply_packet = OGNCore.Packet.gen_core_login_reply(server_name, :no_auth)
           :gen_tcp.send(socket, reply_packet)
           :no_auth
       end
     end
-  end
-
-  defp handle_cbor(data, _, _) do
-    Logger.debug("OGNCore.ServerTCP/handle_cbor: CBOR data not valid: #{inspect(data)}")
-    :error
   end
 end
