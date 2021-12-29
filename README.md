@@ -79,7 +79,10 @@ Different files are selected for different mix configurations.
 Example configuration file (TOML format):
 
 ```
+[Core]
 server_name = "Core1"
+server_port = 8701
+server_max_conn = 500
 
 [APRS]
 server_addr = "aprs.glidernet.org"
@@ -88,7 +91,9 @@ client_id = 999
 ```
 
 options:
-- server_name: server identifier used in OGNCore network,
+- Core/server_name: server identifier used in OGNCore network,
+- Core/server_port: TCP port used by OGNCore server,
+- Core/server_max_conn: maximum number of TCP connections (must be less than open files limit: "ulimit -n")
 - APRS/server_addr: APRS server used by OGNCore server,
 - APRS/server_port: TCP port of APRS server,
 - APRS/client_id: numeric suffix of APRS login, full login will be CORE-999. 
