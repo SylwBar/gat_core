@@ -37,7 +37,7 @@ defmodule OGNCore.Application do
 
       children = [
         {OGNCore.ServerTCP, [core_config]},
-        {Registry, keys: :duplicate, name: Registry.ConnectionTCP},
+        {Registry, keys: :duplicate, name: Registry.ConnectionsTCP},
         {OGNCore.APRSConnection, [aprs_config]}
       ]
 

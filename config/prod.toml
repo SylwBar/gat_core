@@ -1,6 +1,7 @@
 [Core]
 server_name = "Core1"
 server_port = 8701
+server_max_conn = 500
 
 [APRS]
 server_addr = "aprs.glidernet.org"

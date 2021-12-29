@@ -9,7 +9,7 @@ defmodule OGNCore.ServerTCP do
   end
 
   def get_connections() do
-    Registry.select(Registry.ConnectionTCP, [
+    Registry.select(Registry.ConnectionsTCP, [
       {{:"$1", :"$2", :"$3"}, [], [{{:"$1", :"$2", :"$3"}}]}
     ])
   end
@@ -21,32 +21,33 @@ defmodule OGNCore.ServerTCP do
   def init([core_config]) do
     server_port = Map.get(core_config, "server_port")
     server_name = Map.get(core_config, "server_name")
+    server_max_conn = Map.get(core_config, "server_max_conn", 500)
     {:ok, listen_socket} = :gen_tcp.listen(server_port, [:binary, active: false, packet: 2])
-    spawn(fn -> acceptor(listen_socket, server_name) end)
+    spawn(fn -> acceptor(listen_socket, server_name, server_max_conn) end)
     state = %{server_port: server_port, listen_socket: listen_socket}
 
     {:ok, state}
   end
 
   # ----- private functions -----
-  defp acceptor(listen_socket, server_name) do
+  defp acceptor(listen_socket, server_name, server_max_conn) do
     case :gen_tcp.accept(listen_socket) do
       {:ok, socket} ->
-        spawn(fn -> acceptor(listen_socket, server_name) end)
-        handle(socket, server_name)
+        spawn(fn -> acceptor(listen_socket, server_name, server_max_conn) end)
+        handle(socket, server_name, server_max_conn)
 
       error ->
         Logger.error("OGNCore.ServerTCP/acceptor: #{inspect(error)}")
     end
   end
 
-  defp handle(socket, server_name) do
+  defp handle(socket, server_name, server_max_conn) do
     case :gen_tcp.recv(socket, 0, @login_timeout_ms) do
       {:ok, data} ->
         case CBOR.decode(data) do
           # Valid handle_login_request message: local link, with msg_body map
           {:ok, [0, 0, 1, msg_body, []], <<>>} when is_map(msg_body) ->
-            handle_login_request(msg_body, socket, server_name)
+            handle_login_request(msg_body, socket, server_name, server_max_conn)
 
           error ->
             Logger.debug("OGNCore.ServerTCP/handle: CBOR error #{inspect(error)}")
@@ -60,7 +61,7 @@ defmodule OGNCore.ServerTCP do
   end
 
   # msg-type 0/1 : login request
-  defp handle_login_request(msg_body, socket, server_name) do
+  defp handle_login_request(msg_body, socket, server_name, server_max_conn) do
     object_id = Map.get(msg_body, 1)
 
     if object_id == nil do
@@ -68,11 +69,11 @@ defmodule OGNCore.ServerTCP do
     else
       tuple_id = :erlang.list_to_tuple(object_id)
 
-      case OGNCore.ServerAuth.check_auth(tuple_id) do
+      case OGNCore.ServerAuth.check_auth(tuple_id, server_max_conn) do
         :ok ->
           Logger.info("OGNCore.ServerTCP accepted login: #{inspect(tuple_id)}")
 
-          case Registry.lookup(Registry.ConnectionTCP, tuple_id) do
+          case Registry.lookup(Registry.ConnectionsTCP, tuple_id) do
             [] ->
               :ok
 
@@ -84,6 +85,12 @@ defmodule OGNCore.ServerTCP do
           reply_packet = OGNCore.Packet.gen_core_login_reply(server_name, :ok)
           :gen_tcp.send(socket, reply_packet)
           :ok = :gen_tcp.controlling_process(socket, connection_pid)
+
+        :full ->
+          Logger.info("OGNCore.ServerTCP full login: #{inspect(tuple_id)}")
+          reply_packet = OGNCore.Packet.gen_core_login_reply(server_name, :full)
+          :gen_tcp.send(socket, reply_packet)
+          :full
 
         :no_auth ->
           Logger.info("OGNCore.ServerTCP no_auth login: #{inspect(tuple_id)}")

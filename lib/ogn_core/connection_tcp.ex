@@ -22,7 +22,7 @@ defmodule OGNCore.ConnectionTCP do
     :ok = :inet.setopts(socket, active: true)
     {:ok, {{ip1, ip2, ip3, ip4}, port}} = :inet.peername(socket)
     peer_str = "#{ip1}.#{ip2}.#{ip3}.#{ip4}:#{port}"
-    {:ok, _} = Registry.register(Registry.ConnectionTCP, object_id, peer_str)
+    {:ok, _} = Registry.register(Registry.ConnectionsTCP, object_id, peer_str)
     Logger.info("ConnectionTCP #{inspect(self())} #{inspect(object_id)}: started.")
     server_ka_timer_ref = :erlang.send_after(@server_ka_timer_msec, self(), :server_ka_timer_exp)
     client_ka_timer_ref = :erlang.send_after(@client_ka_timer_msec, self(), :client_ka_timer_exp)

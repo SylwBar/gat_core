@@ -13,6 +13,7 @@ defmodule OGNCore.Packet do
   def gen_core_login_reply(server_name, reply) do
     reply_id =
       case reply do
+        :full -> 0
         :ok -> 1
         :no_auth -> 2
       end
