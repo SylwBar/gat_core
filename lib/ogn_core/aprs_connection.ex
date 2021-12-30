@@ -1,7 +1,7 @@
-defmodule APRSConnection do
-  @reconnect_timer_sec 10
-  @client_keep_alive_timer_sec 120
-  @server_keep_alive_timer_sec 60
+defmodule OGNCore.APRSConnection do
+  @reconnect_timer_msec 10_000
+  @client_keep_alive_timer_msec 120_000
+  @server_keep_alive_timer_msec 60_000
 
   use GenServer
   require Logger
@@ -34,7 +34,7 @@ defmodule APRSConnection do
     case state.server_addr |> String.to_charlist() |> :inet.getaddr(:inet) do
       {:error, error} ->
         Logger.error("APRSConnection: address error: #{inspect(error)}")
-        :erlang.send_after(@reconnect_timer_sec * 1000, self(), :connect)
+        :erlang.send_after(@reconnect_timer_msec, self(), :connect)
         {:noreply, %{state | socket: nil, pkt_fragment: <<>>}}
 
       {:ok, {ip1, ip2, ip3, ip4} = server_ip4} ->
@@ -56,7 +56,7 @@ defmodule APRSConnection do
 
             _ ->
               Logger.error("APRSConnection: connection error")
-              :erlang.send_after(@reconnect_timer_sec * 1000, self(), :connect)
+              :erlang.send_after(@reconnect_timer_msec, self(), :connect)
               nil
           end
 
@@ -79,8 +79,7 @@ defmodule APRSConnection do
 
   # ----- Client keep alive messages -----
   def handle_info(:start_client_ka_timer, state) do
-    client_ka_timer =
-      :erlang.send_after(@client_keep_alive_timer_sec * 1000, self(), :send_keep_alive)
+    client_ka_timer = :erlang.send_after(@client_keep_alive_timer_msec, self(), :send_keep_alive)
 
     {:noreply, %{state | client_ka_timer: client_ka_timer}}
   end
@@ -88,8 +87,7 @@ defmodule APRSConnection do
   def handle_info(:send_keep_alive, state) do
     :ok = :gen_tcp.send(state.socket, "#KA\r\n")
 
-    client_ka_timer =
-      :erlang.send_after(@client_keep_alive_timer_sec * 1000, self(), :send_keep_alive)
+    client_ka_timer = :erlang.send_after(@client_keep_alive_timer_msec, self(), :send_keep_alive)
 
     {:noreply, %{state | client_ka_timer: client_ka_timer}}
   end
@@ -100,8 +98,7 @@ defmodule APRSConnection do
       :erlang.cancel_timer(state.server_ka_timer)
     end
 
-    server_ka_timer =
-      :erlang.send_after(@server_keep_alive_timer_sec * 1000, self(), :server_time_out)
+    server_ka_timer = :erlang.send_after(@server_keep_alive_timer_msec, self(), :server_time_out)
 
     {:noreply, %{state | server_ka_timer: server_ka_timer}}
   end
@@ -109,13 +106,13 @@ defmodule APRSConnection do
   # ----- APRS server not sending data -----
   def handle_info(:server_time_out, state) do
     Logger.warning("APRSConnection: server timeout")
-    :gen_tcp.close(state.socket)
+    :ok = :gen_tcp.close(state.socket)
 
     if state.client_ka_timer != nil do
       :timer.cancel(state.client_ka_timer)
     end
 
-    :timer.send_after(@reconnect_timer_sec * 1000, self(), :connect)
+    :timer.send_after(@reconnect_timer_msec, self(), :connect)
 
     {:noreply,
      %{state | socket: nil, pkt_fragment: <<>>, client_ka_timer: nil, server_ka_timer: nil}}
@@ -133,7 +130,7 @@ defmodule APRSConnection do
       :erlang.cancel_timer(state.server_ka_timer)
     end
 
-    :erlang.send_after(@reconnect_timer_sec * 1000, self(), :connect)
+    :erlang.send_after(@reconnect_timer_msec, self(), :connect)
 
     {:noreply,
      %{state | socket: nil, pkt_fragment: <<>>, client_ka_timer: nil, server_ka_timer: nil}}
@@ -159,6 +156,6 @@ defmodule APRSConnection do
 
   # ----- APRSConnection API -----
   def start_link([aprs_config]) do
-    GenServer.start_link(APRSConnection, [aprs_config], name: __MODULE__)
+    GenServer.start_link(__MODULE__, [aprs_config], name: __MODULE__)
   end
 end

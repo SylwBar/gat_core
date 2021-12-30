@@ -1,4 +1,5 @@
 %{
+  "cbor": {:hex, :cbor, "1.0.0", "35d33a26f6420ce3d2d01c0b1463a748b34c537d5609fc40116daf3666700d36", [:mix], [], "hexpm", "cc5e21e0fa5a0330715a3806c67bc294f8b65d07160f751b5bd6058bed1962ac"},
   "logger_file_backend": {:hex, :logger_file_backend, "0.0.12", "5afaa76a0cb6123cd19900c0f414044cfc46c24c6a1b80842a9b0e7f6c755e57", [:mix], [], "hexpm", "7335cc4e186a3804f9d3651f2fb42243a11748f1e384421bdd17623ed53fed79"},
   "toml": {:hex, :toml, "0.6.2", "38f445df384a17e5d382befe30e3489112a48d3ba4c459e543f748c2f25dd4d1", [:mix], [], "hexpm", "d013e45126d74c0c26a38d31f5e8e9b83ea19fc752470feb9a86071ca5a672fa"},
 }

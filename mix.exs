@@ -22,6 +22,7 @@ defmodule OGNCore.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:cbor, "~> 1.0"},
       {:toml, "~> 0.6.2"},
       {:logger_file_backend, "~> 0.0.12"}
     ]

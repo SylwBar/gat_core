@@ -15,7 +15,14 @@ defmodule OGNCore.Application do
       toml_file = Application.fetch_env!(:ogn_core, :toml_config)
       Logger.info("Reading configuration file: #{toml_file}")
       toml_config = Toml.decode_file!(toml_file)
-      core_server_name = Map.get(toml_config, "server_name")
+
+      core_config = Map.get(toml_config, "Core")
+
+      if core_config == nil do
+        raise "No Core configuration provided in configuration file"
+      end
+
+      core_server_name = Map.get(core_config, "server_name")
 
       if core_server_name == nil do
         raise "No server name provided in configuration file"
@@ -29,7 +36,9 @@ defmodule OGNCore.Application do
       end
 
       children = [
-        {APRSConnection, [aprs_config]}
+        {OGNCore.ServerTCP, [core_config]},
+        {Registry, keys: :duplicate, name: Registry.ConnectionsTCP},
+        {OGNCore.APRSConnection, [aprs_config]}
       ]
 
       # See https://hexdocs.pm/elixir/Supervisor.html
