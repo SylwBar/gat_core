@@ -9,10 +9,10 @@ defmodule OGNCore.APRSConnection do
   @impl true
   # ----- APRS Connection process init. function -----
 
-  def init([aprs_config]) do
-    server_addr = Map.get(aprs_config, "server_addr")
-    server_port = Map.get(aprs_config, "server_port")
-    client_id = Map.get(aprs_config, "client_id")
+  def init([]) do
+    server_addr = OGNCore.Config.get_aprs_server_addr()
+    server_port = OGNCore.Config.get_aprs_server_port()
+    client_id = OGNCore.Config.get_aprs_client_id()
 
     state = %{
       server_addr: server_addr,
@@ -155,7 +155,7 @@ defmodule OGNCore.APRSConnection do
   end
 
   # ----- APRSConnection API -----
-  def start_link([aprs_config]) do
-    GenServer.start_link(__MODULE__, [aprs_config], name: __MODULE__)
+  def start_link([]) do
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 end
