@@ -14,11 +14,18 @@ defmodule OGNCore.Application do
     toml_file = Application.fetch_env!(:ogn_core, :toml_config)
     :ok = OGNCore.Config.read_toml(toml_file)
 
-    children = [
-      {OGNCore.ServerTCP, []},
-      {Registry, keys: :duplicate, name: Registry.ConnectionsTCP},
-      {OGNCore.APRSConnection, []}
-    ]
+    tortoise_child =
+      case OGNCore.Config.get_mqtt_enabled() do
+        true -> [{Tortoise.Connection, OGNCore.MQTT.get_tortoise_config()}]
+        false -> []
+      end
+
+    children =
+      [
+        {OGNCore.ServerTCP, []},
+        {Registry, keys: :duplicate, name: Registry.ConnectionsTCP},
+        {OGNCore.APRSConnection, []}
+      ] ++ tortoise_child
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
