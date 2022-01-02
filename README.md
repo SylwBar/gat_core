@@ -76,24 +76,48 @@ Basic tests suite is executed using mix:
 Configuration files are read from "config" directory.
 Different files are selected for different mix configurations.
 
-Example configuration file (TOML format):
+Example configuration file (TOML format) (split into parts):
+
+### OGNCore server general settings
 
 ```
 [Core]
 server_name = "Core1"
 server_port = 8701
 server_max_conn = 500
+```
 
+- server_name: server identifier used in OGNCore network,
+- server_port: TCP port used by OGNCore server,
+- server_max_conn: maximum number of TCP connections (must be less than open files limit: "ulimit -n")
+
+### OGN APRS server connection settings
+```
 [APRS]
 server_addr = "aprs.glidernet.org"
 server_port = 14580
 client_id = 999
 ```
 
-options:
-- Core/server_name: server identifier used in OGNCore network,
-- Core/server_port: TCP port used by OGNCore server,
-- Core/server_max_conn: maximum number of TCP connections (must be less than open files limit: "ulimit -n")
-- APRS/server_addr: APRS server used by OGNCore server,
-- APRS/server_port: TCP port of APRS server,
-- APRS/client_id: numeric suffix of APRS login, full login will be CORE-999. 
+- server_addr: APRS server used by OGNCore server,
+- server_port: TCP port of APRS server,
+- client_id: numeric suffix of APRS login, full login will be CORE-999. 
+
+### MQTT broker connection settings
+
+```
+[MQTT]
+enabled = false
+server_addr = "localhost"
+server_port = 1883
+user_name = "core"
+password = "corepassword"
+```
+
+- enabled: MQTT connection switch,
+- server_addr: MQTT broker address,
+- server_port: MQTT broker port,
+- user_name: MQTT broker user name used by OGNCore server,
+- password: MQTT broker user password, for security reasons it should be customized
+
+Note: MQTT protocol defines ClientID parameter which purpose is different than "user_name". OGNCore server will set ClientID to Core/server_name setting (e.g. Core1)
