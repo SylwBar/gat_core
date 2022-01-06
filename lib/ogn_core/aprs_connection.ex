@@ -138,16 +138,25 @@ defmodule OGNCore.APRSConnection do
 
   # ----- APRS Client private functions -----
   defp handle_packet(<<"#", _::bytes>> = cmt), do: handle_comment(cmt)
-  defp handle_packet(_), do: :ok
+
+  defp handle_packet(pkt) do
+    case OGNCore.APRS.get_source_id(pkt) do
+      {:station, id} ->
+        {:ok, pid} = OGNCore.Station.get_pid(id)
+        OGNCore.Station.send_aprs(pid, pkt)
+
+      :unknown ->
+        :ok
+    end
+  end
 
   defp handle_comment(<<"# logresp", _::bytes>> = cmt) do
     send(self(), :start_client_ka_timer)
     Logger.info("APRSConnection: #{cmt}")
   end
 
-  defp handle_comment(<<"# aprsc", _::bytes>> = cmt) do
+  defp handle_comment(<<"# aprsc", _::bytes>> = _cmt) do
     send(self(), :restart_server_ka_timer)
-    Logger.debug("APRSConnection: #{cmt}")
   end
 
   defp handle_comment(<<"#", _::bytes>> = cmt) do
