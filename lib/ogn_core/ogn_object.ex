@@ -4,8 +4,8 @@ defmodule OGNCore.OGNObject do
 
   # Inactivity timeout check set to 1 minute
   @inactive_check_msec 60_000
-  # Inactive event after 5 minutes
-  @inactive_event_time_msec 5 * 60_000
+  # Inactive event after 30 minutes
+  @inactive_event_time_msec 30 * 60_000
   # Process exit after 120 minutes of inactivity
   @process_exit_time_msec 120 * 60_000
 
