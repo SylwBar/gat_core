@@ -52,7 +52,10 @@ defmodule OGNCore.APRS do
     |> integer(2)
     |> choice([string("E"), string("W")])
 
-  altitude = ignore(string("/A=")) |> integer(6)
+  pos_altitude = ignore(string("/A=")) |> integer(6) |> unwrap_and_tag(:pos_alt)
+  neg_altitude = ignore(string("/A=-")) |> integer(5) |> unwrap_and_tag(:neg_alt)
+
+  altitude = choice([pos_altitude, neg_altitude])
 
   symbol1 = ascii_char([?I, ?/, ?\\])
   symbol2 = ascii_char([?&, ?', ?X, ?n, ?g, ?^, ?O, ?g])
@@ -86,7 +89,7 @@ defmodule OGNCore.APRS do
          lon_sec,
          lon_e_w,
          s2,
-         alt
+         alt_tuple
        ], rest, _context, _position, _byte_offset} ->
         time = {h, m, s}
 
@@ -100,6 +103,12 @@ defmodule OGNCore.APRS do
           case lon_e_w do
             "E" -> lon_deg + lon_min / 60 + lon_sec / 3600
             "W" -> -(lon_deg + lon_min / 60 + lon_sec / 3600)
+          end
+
+        alt =
+          case alt_tuple do
+            {:pos_alt, v} -> v
+            {:neg_alt, v} -> -v
           end
 
         {:ok, {time, lat, lon, alt, s1, s2}, rest}
@@ -145,7 +154,7 @@ defmodule OGNCore.APRS do
          s2,
          cse,
          spd,
-         alt
+         alt_tuple
        ], rest, _context, _position, _byte_offset} ->
         time = {h, m, s}
 
@@ -161,9 +170,15 @@ defmodule OGNCore.APRS do
             "W" -> -(lon_deg + lon_min / 60 + lon_sec / 3600)
           end
 
+        alt =
+          case alt_tuple do
+            {:pos_alt, v} -> v
+            {:neg_alt, v} -> -v
+          end
+
         {:ok, {time, lat, lon, alt, cse, spd, s1, s2}, rest}
 
-      {:error, _reason, _rest, _context, _position, _byte_offset}  ->
+      {:error, _reason, _rest, _context, _position, _byte_offset} ->
         :error
     end
   end
