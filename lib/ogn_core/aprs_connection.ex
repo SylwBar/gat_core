@@ -141,9 +141,13 @@ defmodule OGNCore.APRSConnection do
 
   defp handle_packet(pkt) do
     case OGNCore.APRS.get_source_id(pkt) do
-      {:station, id} ->
+      {:ogn_station, id} ->
         {:ok, pid} = OGNCore.Station.get_pid(id)
         OGNCore.Station.send_aprs(pid, pkt)
+
+      {:ogn_object, id, type} ->
+        {:ok, pid} = OGNCore.OGNObject.get_pid(id, type)
+        OGNCore.OGNObject.send_aprs(pid, pkt)
 
       :unknown ->
         :ok

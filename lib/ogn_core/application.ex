@@ -25,6 +25,7 @@ defmodule OGNCore.Application do
         {OGNCore.ServerTCP, []},
         {Registry, keys: :duplicate, name: Registry.ConnectionsTCP},
         {Registry, keys: :unique, name: Registry.Stations},
+        {Registry, keys: :unique, name: Registry.OGNObjects},
         {OGNCore.APRSConnection, []}
       ] ++ tortoise_child
 
