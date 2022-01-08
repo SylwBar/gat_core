@@ -25,7 +25,8 @@ defmodule OGNCore.MixProject do
       {:cbor, "~> 1.0"},
       {:toml, "~> 0.6.2"},
       {:logger_file_backend, "~> 0.0.12"},
-      {:tortoise, "~> 0.10.0"}
+      {:tortoise, "~> 0.10.0"},
+      {:nimble_parsec, "~> 1.2"}
     ]
   end
 end

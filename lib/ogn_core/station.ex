@@ -30,6 +30,11 @@ defmodule OGNCore.Station do
     IO.puts("Station data for #{inspect(state.id)}:")
     last_rx_datetime = state.last_rx_time |> DateTime.from_unix!(:millisecond)
     IO.puts("Last packet receive time: #{last_rx_datetime}")
+    IO.puts("Received time:\t#{state.rx_time}")
+    IO.puts("Latitude:\t#{state.rx_lat}")
+    IO.puts("Longitude:\t#{state.rx_lon}")
+    IO.puts("Altitude:\t#{state.rx_alt}")
+    IO.puts("Comment:\t#{state.rx_comment}")
   end
 
   def print_state_by_id(id) do
@@ -54,16 +59,73 @@ defmodule OGNCore.Station do
       id: id,
       last_rx_time: last_rx_time,
       inactive_timer_ref: inactive_timer_ref,
-      inactive_event_sent: false
+      inactive_event_sent: false,
+      rx_time: nil,
+      rx_lat: nil,
+      rx_lon: nil,
+      rx_alt: nil,
+      rx_comment: nil
     }
 
     {:ok, state}
   end
 
   @impl true
-  def handle_cast({:aprs, _pkt}, state) do
-    last_rx_time = :erlang.system_time(:millisecond)
-    {:noreply, %{state | last_rx_time: last_rx_time}}
+  def handle_cast({:aprs, pkt}, state) do
+    new_state =
+      case OGNCore.APRS.get_aprs_addr(pkt) do
+        {:ok, _addr_list, aprs_message} ->
+          case aprs_message do
+            <<"/", pos_ts::bytes>> ->
+              case OGNCore.APRS.get_aprs_position_with_timestamp(pos_ts) do
+                {:ok, {time, lat, lon, alt, _s1, _s2}, _comment} ->
+                  {:ok, %{state | rx_time: time, rx_lat: lat, rx_lon: lon, rx_alt: alt}}
+
+                _ ->
+                  Logger.warning(
+                    "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: get_aprs_position_with_timestamp not recognized: #{pkt}"
+                  )
+
+                  :aprs_error
+              end
+
+            <<">", status::bytes>> ->
+              case OGNCore.APRS.get_status(status) do
+                {:ok, {time}, comment} ->
+                  {:ok, %{state | rx_time: time, rx_comment: comment}}
+
+                _ ->
+                  Logger.warning(
+                    "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: get_status not recognized: #{pkt}"
+                  )
+
+                  :aprs_error
+              end
+
+            _ ->
+              Logger.warning(
+                "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: aprs_message not recognized: #{pkt}"
+              )
+
+              :aprs_error
+          end
+
+        :error ->
+          Logger.warning(
+            "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: get_aprs_addr() failed: #{pkt}"
+          )
+
+          :aprs_error
+      end
+
+    case new_state do
+      {:ok, updated_state} ->
+        last_rx_time = :erlang.system_time(:millisecond)
+        {:noreply, %{updated_state | last_rx_time: last_rx_time}}
+
+      :aprs_error ->
+        {:noreply, state}
+    end
   end
 
   @impl true
