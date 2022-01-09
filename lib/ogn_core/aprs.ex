@@ -57,8 +57,12 @@ defmodule OGNCore.APRS do
 
   altitude = choice([pos_altitude, neg_altitude])
 
-  symbol1 = ascii_char([?I, ?/, ?\\])
-  symbol2 = ascii_char([?&, ?', ?X, ?n, ?g, ?^, ?O, ?g])
+  # APRS101.pdf page 91
+  # Symbol Table Identifier
+  symbol1 = ascii_char([0..255])
+  # APRS101.pdf page 91
+  # Symbol code
+  symbol2 = ascii_char([0..255])
 
   # position with timestamp
   defparsec(
