@@ -1,18 +1,13 @@
 defmodule OGNCore do
-  @moduledoc """
-  Documentation for `OGNCore`.
-  """
+  def stations_list() do
+    Registry.select(Registry.Stations, [
+      {{:"$1", :"$2", :"$3"}, [], [{{:"$1", :"$2", :"$3"}}]}
+    ])
+  end
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> OGNCore.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def ogn_objects_list() do
+    Registry.select(Registry.OGNObjects, [
+      {{:"$1", :"$2", :"$3"}, [], [{{:"$1", :"$2", :"$3"}}]}
+    ])
   end
 end

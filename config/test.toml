@@ -5,7 +5,7 @@ server_max_conn = 500
 
 [APRS]
 server_addr = "localhost"
-server_port = 14580
+server_port = 10152
 client_id = 999
 
 [MQTT]

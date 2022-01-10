@@ -2,6 +2,7 @@
   "cbor": {:hex, :cbor, "1.0.0", "35d33a26f6420ce3d2d01c0b1463a748b34c537d5609fc40116daf3666700d36", [:mix], [], "hexpm", "cc5e21e0fa5a0330715a3806c67bc294f8b65d07160f751b5bd6058bed1962ac"},
   "gen_state_machine": {:hex, :gen_state_machine, "3.0.0", "1e57f86a494e5c6b14137ebef26a7eb342b3b0070c7135f2d6768ed3f6b6cdff", [:mix], [], "hexpm", "0a59652574bebceb7309f6b749d2a41b45fdeda8dbb4da0791e355dd19f0ed15"},
   "logger_file_backend": {:hex, :logger_file_backend, "0.0.12", "5afaa76a0cb6123cd19900c0f414044cfc46c24c6a1b80842a9b0e7f6c755e57", [:mix], [], "hexpm", "7335cc4e186a3804f9d3651f2fb42243a11748f1e384421bdd17623ed53fed79"},
+  "nimble_parsec": {:hex, :nimble_parsec, "1.2.0", "b44d75e2a6542dcb6acf5d71c32c74ca88960421b6874777f79153bbbbd7dccc", [:mix], [], "hexpm", "52b2871a7515a5ac49b00f214e4165a40724cf99798d8e4a65e4fd64ebd002c1"},
   "toml": {:hex, :toml, "0.6.2", "38f445df384a17e5d382befe30e3489112a48d3ba4c459e543f748c2f25dd4d1", [:mix], [], "hexpm", "d013e45126d74c0c26a38d31f5e8e9b83ea19fc752470feb9a86071ca5a672fa"},
   "tortoise": {:hex, :tortoise, "0.10.0", "d8821b9a5052355ca61d9fa784652f435997fa98b210f88565c98f3494605efd", [:mix], [{:gen_state_machine, "~> 2.0 or ~> 3.0", [hex: :gen_state_machine, repo: "hexpm", optional: false]}], "hexpm", "926d97b03cd0d2f6e0e1ebf06c1efa50101de96d0317dea5604c1c9e43e66735"},
 }
