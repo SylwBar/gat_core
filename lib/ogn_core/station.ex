@@ -30,7 +30,8 @@ defmodule OGNCore.Station do
     IO.puts("Station data for #{inspect(state.id)}:")
     last_rx_datetime = state.last_rx_time |> DateTime.from_unix!(:millisecond)
     IO.puts("Last packet receive time: #{last_rx_datetime}")
-    IO.puts("Received time:\t#{inspect(state.rx_time)}")
+    rx_datetime = state.rx_time |> DateTime.from_unix!(:second)
+    IO.puts("Received time:\t#{rx_datetime}")
     IO.puts("Latitude:\t#{state.rx_lat}")
     IO.puts("Longitude:\t#{state.rx_lon}")
     IO.puts("Altitude:\t#{state.rx_alt}")
@@ -57,6 +58,7 @@ defmodule OGNCore.Station do
 
     state = %{
       id: id,
+      server_id: OGNCore.Config.get_core_server_name(),
       last_rx_time: last_rx_time,
       inactive_timer_ref: inactive_timer_ref,
       inactive_event_sent: false,
@@ -79,7 +81,23 @@ defmodule OGNCore.Station do
             <<"/", pos_ts::bytes>> ->
               case OGNCore.APRS.get_aprs_position_with_timestamp(pos_ts) do
                 {:ok, {time, lat, lon, alt, _s1, _s2}, _comment} ->
-                  {:ok, %{state | rx_time: time, rx_lat: lat, rx_lon: lon, rx_alt: alt}}
+                  rx_time = OGNCore.APRS.get_unix_time(time)
+                  position_data = %{rx_time: rx_time, lat: lat, lon: lon, alt: alt}
+
+                  position_packet =
+                    OGNCore.Packet.gen_station_position(state.id, state.server_id, position_data)
+
+                  Tortoise.publish(state.server_id, "glidernet", position_packet, qos: 0)
+
+                  new_state = %{
+                    state
+                    | rx_time: rx_time,
+                      rx_lat: lat,
+                      rx_lon: lon,
+                      rx_alt: alt
+                  }
+
+                  {:ok, new_state}
 
                 _ ->
                   Logger.warning(
@@ -92,7 +110,16 @@ defmodule OGNCore.Station do
             <<">", status::bytes>> ->
               case OGNCore.APRS.get_status(status) do
                 {:ok, {time}, comment} ->
-                  {:ok, %{state | rx_time: time, rx_comment: comment}}
+                  rx_time = OGNCore.APRS.get_unix_time(time)
+                  status_data = %{rx_time: rx_time, cmt: comment}
+
+                  status_packet =
+                    OGNCore.Packet.gen_station_status(state.id, state.server_id, status_data)
+
+                  Tortoise.publish(state.server_id, "glidernet", status_packet, qos: 0)
+
+                  new_state = %{state | rx_time: rx_time, rx_comment: comment}
+                  {:ok, new_state}
 
                 _ ->
                   Logger.warning(

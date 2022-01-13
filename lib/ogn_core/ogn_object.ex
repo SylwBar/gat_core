@@ -31,7 +31,8 @@ defmodule OGNCore.OGNObject do
     last_rx_datetime = state.last_rx_time |> DateTime.from_unix!(:millisecond)
     IO.puts("Last packet receive time: #{last_rx_datetime}")
     IO.puts("Type:   \t#{state.type}")
-    IO.puts("Received time:\t#{inspect(state.rx_time)}")
+    rx_datetime = state.rx_time |> DateTime.from_unix!(:second)
+    IO.puts("Received time:\t#{rx_datetime}")
     IO.puts("Latitude:\t#{state.rx_lat}")
     IO.puts("Longitude:\t#{state.rx_lon}")
     IO.puts("Altitude:\t#{state.rx_alt}")
@@ -61,6 +62,7 @@ defmodule OGNCore.OGNObject do
 
     state = %{
       id: id,
+      server_id: OGNCore.Config.get_core_server_name(),
       type: type,
       last_rx_time: last_rx_time,
       inactive_timer_ref: inactive_timer_ref,
@@ -87,18 +89,38 @@ defmodule OGNCore.OGNObject do
             <<"/", pos_ts::bytes>> ->
               case OGNCore.APRS.get_pos_w_timest_cse_spd(pos_ts) do
                 {:ok, {time, lat, lon, alt, cse, spd, _s1, _s2}, comment} ->
-                  {:ok,
-                   %{
-                     state
-                     | rx_time: time,
-                       rx_lat: lat,
-                       rx_lon: lon,
-                       rx_alt: alt,
-                       rx_cse: cse,
-                       rx_spd: spd,
-                       rx_comment: comment,
-                       path: [{2, List.last(addr_list)}]
-                   }}
+                  rx_time = OGNCore.APRS.get_unix_time(time)
+
+                  position_data = %{
+                    rx_time: rx_time,
+                    lat: lat,
+                    lon: lon,
+                    alt: alt,
+                    cse: cse,
+                    spd: spd,
+                    cmt: comment
+                  }
+
+                  station_id = List.last(addr_list)
+
+                  position_packet =
+                    OGNCore.Packet.gen_object_position(state.id, station_id, position_data)
+
+                  Tortoise.publish(state.server_id, "glidernet", position_packet, qos: 0)
+
+                  new_state = %{
+                    state
+                    | rx_time: rx_time,
+                      rx_lat: lat,
+                      rx_lon: lon,
+                      rx_alt: alt,
+                      rx_cse: cse,
+                      rx_spd: spd,
+                      rx_comment: comment,
+                      path: [{2, List.last(addr_list)}]
+                  }
+
+                  {:ok, new_state}
 
                 _ ->
                   Logger.warning(
