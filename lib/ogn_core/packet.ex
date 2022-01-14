@@ -59,6 +59,46 @@ defmodule OGNCore.Packet do
     CBOR.encode(station_status)
   end
 
+  def gen_station_timeout(station_id, core_server_id, event_data) do
+    source = [2, station_id]
+    destination = 1
+    type = 3
+    path = [[1, core_server_id]]
+    rx_time = event_data.rx_time
+    last_rx_time = event_data.last_rx_time
+
+    last_lat =
+      case event_data.last_lat do
+        nil -> 0
+        lat -> round(lat * @lat_lon_scale)
+      end
+
+    last_lon =
+      case event_data.last_lon do
+        nil -> 0
+        lon -> round(lon * @lat_lon_scale)
+      end
+
+    last_alt =
+      case event_data.last_alt do
+        nil -> 0
+        alt -> alt
+      end
+
+    last_cmt = event_data.last_cmt
+
+    body = %{
+      1 => rx_time,
+      2 => last_rx_time,
+      3 => [last_lat, last_lon],
+      4 => last_alt,
+      23 => last_cmt
+    }
+
+    station_event = [source, destination, type, body, path]
+    CBOR.encode(station_event)
+  end
+
   def gen_object_position(object_id, station_id, position_data) do
     source = [3, object_id]
     destination = 1
@@ -74,5 +114,45 @@ defmodule OGNCore.Packet do
 
     object_status = [source, destination, type, body, path]
     CBOR.encode(object_status)
+  end
+
+  def gen_object_timeout(object_id, station_id, event_data) do
+    source = [3, object_id]
+    destination = 1
+    type = 2
+    path = [[2, station_id]]
+    rx_time = event_data.rx_time
+    last_rx_time = event_data.last_rx_time
+
+    last_lat =
+      case event_data.last_lat do
+        nil -> 0
+        lat -> round(lat * @lat_lon_scale)
+      end
+
+    last_lon =
+      case event_data.last_lon do
+        nil -> 0
+        lon -> round(lon * @lat_lon_scale)
+      end
+
+    last_alt =
+      case event_data.last_alt do
+        nil -> 0
+        alt -> alt
+      end
+
+    last_cmt = event_data.last_cmt
+
+    body = %{
+      1 => rx_time,
+      2 => last_rx_time,
+      3 => [last_lat, last_lon],
+      4 => last_alt,
+      23 => last_cmt
+    }
+
+    object_event = [source, destination, type, body, path]
+    CBOR.encode(object_event)
   end
 end

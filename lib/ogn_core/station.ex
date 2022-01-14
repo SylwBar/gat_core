@@ -168,8 +168,24 @@ defmodule OGNCore.Station do
         if :erlang.system_time(:millisecond) - state.last_rx_time > @inactive_event_time_msec do
           if state.inactive_event_sent == false do
             Logger.debug(
-              "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: event inactive."
+              "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: timeout event."
             )
+
+            rx_time = DateTime.utc_now() |> DateTime.to_unix()
+
+            event_data = %{
+              rx_time: rx_time,
+              last_rx_time: state.rx_time,
+              last_lat: state.rx_lat,
+              last_lon: state.rx_lon,
+              last_alt: state.rx_alt,
+              last_cmt: state.rx_comment
+            }
+
+            event_packet =
+              OGNCore.Packet.gen_station_timeout(state.id, state.server_id, event_data)
+
+            Tortoise.publish(state.server_id, "events", event_packet, qos: 0)
           end
 
           true
