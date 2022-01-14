@@ -251,4 +251,10 @@ defmodule OGNCore.APRS do
 
   def get_ogn_id(<<_st_nt_tp::6, addr_type::2, addr::bytes>>),
     do: {addr_type, addr}
+
+  def get_unix_time({aprs_h, aprs_m, aprs_s}) do
+    utc_datetime = DateTime.utc_now()
+    aprs_date_time = %{utc_datetime | hour: aprs_h, minute: aprs_m, second: aprs_s}
+    DateTime.to_unix(aprs_date_time)
+  end
 end

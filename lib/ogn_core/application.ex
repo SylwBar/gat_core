@@ -22,10 +22,10 @@ defmodule OGNCore.Application do
 
     children =
       [
-        {OGNCore.ServerTCP, []},
         {Registry, keys: :duplicate, name: Registry.ConnectionsTCP},
         {Registry, keys: :unique, name: Registry.Stations},
         {Registry, keys: :unique, name: Registry.OGNObjects},
+        {OGNCore.ServerTCP, []},
         {OGNCore.APRSConnection, []}
       ] ++ tortoise_child
 
