@@ -13,6 +13,7 @@ defmodule OGNCore.Application do
     Logger.info("OGN Core #{ver} #{env}")
     toml_file = Application.fetch_env!(:ogn_core, :toml_config)
     :ok = OGNCore.Config.read_toml(toml_file)
+    {:ok, :objects_data} = :dets.open_file(:objects_data, type: :set, file: 'object_data.dets')
 
     tortoise_child =
       case OGNCore.Config.get_mqtt_enabled() do

@@ -84,6 +84,12 @@ defmodule OGNCore.OGNObject do
     last_rx_time = :erlang.system_time(:millisecond)
     inactive_timer_ref = :erlang.send_after(@inactive_check_msec, self(), :inactive_check_exp)
 
+    dets_delay =
+      case :dets.lookup(:objects_data, id) do
+        [{^id, delay}] -> delay
+        _ -> 0
+      end
+
     state = %{
       id: id,
       server_id: OGNCore.Config.get_core_server_name(),
@@ -100,7 +106,7 @@ defmodule OGNCore.OGNObject do
       rx_spd: nil,
       rx_comment: nil,
       rx_path: nil,
-      delay: 0
+      delay: dets_delay
     }
 
     {:ok, state}
