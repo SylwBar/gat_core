@@ -135,5 +135,5 @@ Currently timeout is set to 30 minutes for stations and objects. It could be cha
 
 in ogn_object.ex and station.ex
 
-Event format is defined in docs/OGNCore_message_format.pdf, they published on "events" MQTT topic.
+Event format is defined in docs/OGNCore_message_format.pdf, they are published on "events" MQTT topic.
 
