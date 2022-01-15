@@ -121,3 +121,19 @@ password = "corepassword"
 - password: MQTT broker user password, for security reasons it should be customized
 
 Note: MQTT protocol defines ClientID parameter which purpose is different than "user_name". OGNCore server will set ClientID to Core/server_name setting (e.g. Core1)
+
+## OGNCore features
+OGNCore is designed to be feature compatible with APRSC, but its internal architecture allows new functionalities to be added.
+
+### Timeout events
+OGNCore remembers time of last received packet for each tracked entity. Special type of message (event) is sent after predefined time of inactivity.
+Currently timeout is set to 30 minutes for stations and objects. It could be changed manually by configuring module parameter:
+
+```
+ @inactive_event_time_msec 30 * 60_000
+```
+
+in ogn_object.ex and station.ex
+
+Event format is defined in docs/OGNCore_message_format.pdf, they published on "events" MQTT topic.
+
