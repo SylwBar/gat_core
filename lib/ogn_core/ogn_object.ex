@@ -68,6 +68,7 @@ defmodule OGNCore.OGNObject do
       inactive_timer_ref: inactive_timer_ref,
       inactive_event_sent: false,
       rx_time: nil,
+      rx_station_id: nil,
       rx_lat: nil,
       rx_lon: nil,
       rx_alt: nil,
@@ -90,6 +91,7 @@ defmodule OGNCore.OGNObject do
               case OGNCore.APRS.get_pos_w_timest_cse_spd(pos_ts) do
                 {:ok, {time, lat, lon, alt, cse, spd, _s1, _s2}, comment} ->
                   rx_time = OGNCore.APRS.get_unix_time(time)
+                  rx_station_id = List.last(addr_list)
 
                   position_data = %{
                     rx_time: rx_time,
@@ -101,16 +103,15 @@ defmodule OGNCore.OGNObject do
                     cmt: comment
                   }
 
-                  station_id = List.last(addr_list)
-
                   position_packet =
-                    OGNCore.Packet.gen_object_position(state.id, station_id, position_data)
+                    OGNCore.Packet.gen_object_position(state.id, rx_station_id, position_data)
 
                   Tortoise.publish(state.server_id, "glidernet", position_packet, qos: 0)
 
                   new_state = %{
                     state
                     | rx_time: rx_time,
+                      rx_station_id: rx_station_id,
                       rx_lat: lat,
                       rx_lon: lon,
                       rx_alt: alt,
@@ -169,8 +170,24 @@ defmodule OGNCore.OGNObject do
         if :erlang.system_time(:millisecond) - state.last_rx_time > @inactive_event_time_msec do
           if state.inactive_event_sent == false do
             Logger.debug(
-              "OGNCore.OGNObject #{inspect(self())} #{inspect(state.id)}: event inactive."
+              "OGNCore.OGNObject #{inspect(self())} #{inspect(state.id)}: timeout event."
             )
+
+            rx_time = DateTime.utc_now() |> DateTime.to_unix()
+
+            event_data = %{
+              rx_time: rx_time,
+              last_rx_time: state.rx_time,
+              last_lat: state.rx_lat,
+              last_lon: state.rx_lon,
+              last_alt: state.rx_alt,
+              last_cmt: state.rx_comment
+            }
+
+            event_packet =
+              OGNCore.Packet.gen_object_timeout(state.id, state.rx_station_id, event_data)
+
+            Tortoise.publish(state.server_id, "events", event_packet, qos: 0)
           end
 
           true
