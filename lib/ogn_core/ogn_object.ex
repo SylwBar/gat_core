@@ -63,8 +63,7 @@ defmodule OGNCore.OGNObject do
         set_delay(pid, delay_sec)
 
       [] ->
-        IO.puts("No such object.")
-        :error
+        :no_object
     end
   end
 
@@ -74,8 +73,7 @@ defmodule OGNCore.OGNObject do
         get_delay(pid)
 
       [] ->
-        IO.puts("No such object.")
-        :error
+        :no_object
     end
   end
 
