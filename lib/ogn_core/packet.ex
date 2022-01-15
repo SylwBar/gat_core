@@ -112,6 +112,12 @@ defmodule OGNCore.Packet do
     spd = position_data.spd
     body = %{1 => rx_time, 2 => [lat, lon], 3 => alt, 5 => cse, 6 => spd, 23 => position_data.cmt}
 
+    body =
+      case Map.get(position_data, :delay) do
+        nil -> body
+        delay -> Map.put(body, 100, delay)
+      end
+
     object_status = [source, destination, type, body, path]
     CBOR.encode(object_status)
   end
