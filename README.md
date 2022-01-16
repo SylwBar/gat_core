@@ -137,3 +137,62 @@ in ogn_object.ex and station.ex
 
 Event format is defined in docs/OGNCore_message_format.pdf, they are published on "events" MQTT topic.
 
+### Delays 
+It is possible to introduce transmission delay for selected objects. Delayed position packets are marked with dedicated flag.
+Information about delays is stored permanently on disk.
+
+## OGNCore console API
+It is possible to query and control running system using Elixir console. Following commands are defined:
+
+* OGNCore.stations - lists all currently tracked stations
+```
+iex(1)> OGNCore.stations
+...
+LFOD
+EDMKTower
+EPKA
+Number: 1823
+:ok
+```
+
+* OGNCore.print_station - prints information about single station
+```
+iex(1> OGNCore.print_station "EPKA"
+Station data for "EPKA":
+Last packet receive time: 2022-01-16 11:25:42.213Z
+Received time:  2022-01-16 11:25:42Z
+Latitude:       50.90361111111111
+Longitude:      20.734166666666663
+Altitude:       1099
+Comment:         v0.2.9.RPI-GPU CPU:2.0 RAM:467.2/971.0MB NTP:0.3ms/-3.6ppm +62.3C 3/4Acfts[1h] Lat:2.2s RF:+0+0.0ppm/+5.61dB/+15.8dB@10km[166357]/+23.9dB@10km[3/5]
+:ok
+```
+
+* OGNCore.objects - lists all currently tracked objects
+```
+iex(1)> OGNCore.objects
+...
+(2,DD1234): flarm
+(2,FD4567): ogntrk
+(2,DD7890): flarm
+Number: 288
+:ok
+```
+
+* OGNCore.print_object - prints information about single object
+```
+ex(12)> OGNCore.print_object(2, "DD1234")
+OGNObject data for {2, <<221, 18, 52>>}:
+Last packet receive time: 2022-01-16 11:14:24.275Z
+Type:           flarm
+Received time:  2022-01-16 11:14:22Z
+Latitude:       50.1234
+Longitude:      20.0375
+Altitude:       394
+Course:         0
+Speed:          0
+Comment:         !W58! id3EDD1234 -019fpm +0.0rot 1.5dB 7e -9.2kHz gps2x2
+Path:           [{2, "EPKP"}]
+Delay:          60
+:ok
+```
