@@ -27,3 +27,6 @@ ogn_core-*.tar
 
 # Log files.
 *.log
+
+# DETS files
+*.dets

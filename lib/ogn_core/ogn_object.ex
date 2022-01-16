@@ -15,6 +15,9 @@ defmodule OGNCore.OGNObject do
     GenServer.start(__MODULE__, [id, type], name: reg_name)
   end
 
+  def set_delay(pid, delay_sec), do: GenServer.call(pid, {:set_delay, delay_sec})
+  def get_delay(pid), do: GenServer.call(pid, :get_delay)
+
   def get_pid(id, type) do
     case Registry.lookup(Registry.OGNObjects, id) do
       [{pid, _}] -> {:ok, pid}
@@ -39,7 +42,8 @@ defmodule OGNCore.OGNObject do
     IO.puts("Course:  \t#{state.rx_cse}")
     IO.puts("Speed:  \t#{state.rx_spd}")
     IO.puts("Comment:\t#{state.rx_comment}")
-    IO.puts("Path:   \t#{inspect(state.path)}")
+    IO.puts("Path:   \t#{inspect(state.rx_path)}")
+    IO.puts("Delay:  \t#{inspect(state.delay)}")
   end
 
   def print_state_by_id(id) do
@@ -53,12 +57,38 @@ defmodule OGNCore.OGNObject do
     end
   end
 
+  def set_delay_by_id(id, delay_sec) do
+    case Registry.lookup(Registry.OGNObjects, id) do
+      [{pid, _}] ->
+        set_delay(pid, delay_sec)
+
+      [] ->
+        :no_object
+    end
+  end
+
+  def get_delay_by_id(id) do
+    case Registry.lookup(Registry.OGNObjects, id) do
+      [{pid, _}] ->
+        get_delay(pid)
+
+      [] ->
+        :no_object
+    end
+  end
+
   # ----- OGNObject callbacks -----
 
   @impl true
   def init([id, type]) do
     last_rx_time = :erlang.system_time(:millisecond)
     inactive_timer_ref = :erlang.send_after(@inactive_check_msec, self(), :inactive_check_exp)
+
+    dets_delay =
+      case :dets.lookup(:objects_data, id) do
+        [{^id, delay}] -> delay
+        _ -> 0
+      end
 
     state = %{
       id: id,
@@ -75,7 +105,8 @@ defmodule OGNCore.OGNObject do
       rx_cse: nil,
       rx_spd: nil,
       rx_comment: nil,
-      path: nil
+      rx_path: nil,
+      delay: dets_delay
     }
 
     {:ok, state}
@@ -103,10 +134,27 @@ defmodule OGNCore.OGNObject do
                     cmt: comment
                   }
 
-                  position_packet =
-                    OGNCore.Packet.gen_object_position(state.id, rx_station_id, position_data)
+                  if state.delay == 0 do
+                    position_packet =
+                      OGNCore.Packet.gen_object_position(state.id, rx_station_id, position_data)
 
-                  Tortoise.publish(state.server_id, "glidernet", position_packet, qos: 0)
+                    Tortoise.publish(state.server_id, "glidernet", position_packet, qos: 0)
+                  else
+                    dly_position_data = Map.put(position_data, :delay, state.delay)
+
+                    dly_position_packet =
+                      OGNCore.Packet.gen_object_position(
+                        state.id,
+                        rx_station_id,
+                        dly_position_data
+                      )
+
+                    :erlang.send_after(
+                      state.delay * 1000,
+                      self(),
+                      {:delayed, state.delay, dly_position_packet}
+                    )
+                  end
 
                   new_state = %{
                     state
@@ -118,7 +166,7 @@ defmodule OGNCore.OGNObject do
                       rx_cse: cse,
                       rx_spd: spd,
                       rx_comment: comment,
-                      path: [{2, List.last(addr_list)}]
+                      rx_path: [{2, List.last(addr_list)}]
                   }
 
                   {:ok, new_state}
@@ -202,8 +250,19 @@ defmodule OGNCore.OGNObject do
     end
   end
 
-  @impl true
-  def handle_call(:get_state, _from, state) do
-    {:reply, state, state}
+  def handle_info({:delayed, delay, packet}, state) do
+    if state.delay == delay do
+      Tortoise.publish(state.server_id, "glidernet", packet, qos: 0)
+    end
+
+    {:noreply, state}
   end
+
+  @impl true
+  def handle_call(:get_state, _from, state), do: {:reply, state, state}
+
+  def handle_call({:set_delay, delay_sec}, _from, state),
+    do: {:reply, :ok, %{state | delay: delay_sec}}
+
+  def handle_call(:get_delay, _from, state), do: {:reply, state.delay, state}
 end
