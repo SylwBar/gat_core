@@ -173,7 +173,7 @@ Comment:        v0.2.9.RPI-GPU CPU:2.0 RAM:467.2/971.0MB NTP:0.3ms/-3.6ppm +62.3
 iex(1)> OGNCore.objects
 ...
 (2,DD1234): flarm
-(2,FD4567): ogntrk
+(3,FD4567): ogntrk
 (2,DD7890): flarm
 Number: 288
 :ok
