@@ -157,14 +157,14 @@ Number: 1823
 
 * OGNCore.print_station - prints information about single station
 ```
-iex(1> OGNCore.print_station "EPKA"
+iex(1)> OGNCore.print_station "EPKA"
 Station data for "EPKA":
 Last packet receive time: 2022-01-16 11:25:42.213Z
 Received time:  2022-01-16 11:25:42Z
 Latitude:       50.90361111111111
 Longitude:      20.734166666666663
 Altitude:       1099
-Comment:         v0.2.9.RPI-GPU CPU:2.0 RAM:467.2/971.0MB NTP:0.3ms/-3.6ppm +62.3C 3/4Acfts[1h] Lat:2.2s RF:+0+0.0ppm/+5.61dB/+15.8dB@10km[166357]/+23.9dB@10km[3/5]
+Comment:        v0.2.9.RPI-GPU CPU:2.0 RAM:467.2/971.0MB NTP:0.3ms/-3.6ppm +62.3C 3/4Acfts[1h] Lat:2.2s RF:+0+0.0ppm/+5.61dB/+15.8dB@10km[166357]/+23.9dB@10km[3/5]
 :ok
 ```
 
@@ -181,7 +181,7 @@ Number: 288
 
 * OGNCore.print_object - prints information about single object
 ```
-ex(12)> OGNCore.print_object(2, "DD1234")
+iex(1)> OGNCore.print_object(2, "DD1234")
 OGNObject data for {2, <<221, 18, 52>>}:
 Last packet receive time: 2022-01-16 11:14:24.275Z
 Type:           flarm
@@ -191,8 +191,32 @@ Longitude:      20.0375
 Altitude:       394
 Course:         0
 Speed:          0
-Comment:         !W58! id3EDD1234 -019fpm +0.0rot 1.5dB 7e -9.2kHz gps2x2
+Comment:        !W58! id3EDD1234 -019fpm +0.0rot 1.5dB 7e -9.2kHz gps2x2
 Path:           [{2, "EPKP"}]
 Delay:          60
 :ok
 ```
+
+* OGNCore.set_object_delay - sets delay for selected object and store it local DB (Erlang DETS)
+```
+iex(1)> OGNCore.set_object_delay(2, "123456", 300)
+Entry added to DETS.
+Object tracked and updated
+:ok
+```
+
+* OGNCore.get_object_delay - retrieves information about delay from tracked object
+```
+iex(1)> OGNCore.get_object_delay(2, "123456")     
+300
+```
+
+* OGNCore.print_delays - prints information about delays stored in DETS
+```
+iex(1)> OGNCore.print_delays
+(2,AABBCC): 60 sec.
+(2,123456): 300 sec.
+:ok
+```
+
+Information about delays is stored in "object_data.dets" file in current directory. File could be safely deteled if not required.
