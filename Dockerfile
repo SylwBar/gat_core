@@ -15,5 +15,5 @@ RUN mix local.rebar --force \
 FROM elixir:1.13
 WORKDIR /app
 COPY --from=builder /build/config ./config
-COPY --from=builder /build/_build/prod/rel/ogn_core/ .
-CMD ["/app/bin/ogn_core", "start"]
+COPY --from=builder /build/_build/prod/rel/gat_core/ .
+CMD ["/app/bin/gat_core", "start"]

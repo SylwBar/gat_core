@@ -1,6 +1,6 @@
 import Config
 
-config :ogn_core,
+config :gat_core,
   env: "Release",
   toml_config: "config/prod.toml"
 
@@ -12,4 +12,4 @@ config :logger,
 # configuration for the {LoggerFileBackend, :info_log} backend
 config :logger, :info_log,
   format: "$date $time $metadata[$level] $levelpad$message\n",
-  path: "ogn_core.log"
+  path: "gat_core.log"

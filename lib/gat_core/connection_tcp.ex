@@ -1,4 +1,4 @@
-defmodule OGNCore.ConnectionTCP do
+defmodule GATCore.ConnectionTCP do
   # Server will send KA every 20 seconds
   @server_ka_timer_msec 20_000
   # Client should send any message ay least every 10 minutes
@@ -75,7 +75,7 @@ defmodule OGNCore.ConnectionTCP do
   end
 
   def handle_info(:server_ka_timer_exp, state) do
-    ka_pkt = OGNCore.Packet.gen_core_keep_alive()
+    ka_pkt = GATCore.Packet.gen_core_keep_alive()
     :ok = :gen_tcp.send(state.socket, ka_pkt)
     server_ka_timer_ref = :erlang.send_after(@server_ka_timer_msec, self(), :server_ka_timer_exp)
     {:noreply, %{state | server_ka_timer_ref: server_ka_timer_ref}}

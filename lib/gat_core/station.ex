@@ -1,4 +1,4 @@
-defmodule OGNCore.Station do
+defmodule GATCore.Station do
   use GenServer
   require Logger
 
@@ -58,7 +58,7 @@ defmodule OGNCore.Station do
 
     state = %{
       id: id,
-      server_id: OGNCore.Config.get_core_server_name(),
+      server_id: GATCore.Config.get_core_server_name(),
       last_rx_time: last_rx_time,
       inactive_timer_ref: inactive_timer_ref,
       inactive_event_sent: false,
@@ -75,17 +75,17 @@ defmodule OGNCore.Station do
   @impl true
   def handle_cast({:aprs, pkt}, state) do
     new_state =
-      case OGNCore.APRS.get_aprs_addr(pkt) do
+      case GATCore.APRS.get_aprs_addr(pkt) do
         {:ok, _addr_list, aprs_message} ->
           case aprs_message do
             <<"/", pos_ts::bytes>> ->
-              case OGNCore.APRS.get_aprs_position_with_timestamp(pos_ts) do
+              case GATCore.APRS.get_aprs_position_with_timestamp(pos_ts) do
                 {:ok, {time, lat, lon, alt, _s1, _s2}, _comment} ->
-                  rx_time = OGNCore.APRS.get_unix_time(time)
+                  rx_time = GATCore.APRS.get_unix_time(time)
                   position_data = %{rx_time: rx_time, lat: lat, lon: lon, alt: alt}
 
                   position_packet =
-                    OGNCore.Packet.gen_station_position(state.id, state.server_id, position_data)
+                    GATCore.Packet.gen_station_position(state.id, state.server_id, position_data)
 
                   Tortoise.publish(state.server_id, "glidernet", position_packet, qos: 0)
 
@@ -101,20 +101,20 @@ defmodule OGNCore.Station do
 
                 _ ->
                   Logger.warning(
-                    "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: get_aprs_position_with_timestamp not recognized: #{pkt}"
+                    "GATCore.Station #{inspect(self())} #{inspect(state.id)}: get_aprs_position_with_timestamp not recognized: #{pkt}"
                   )
 
                   :aprs_error
               end
 
             <<">", status::bytes>> ->
-              case OGNCore.APRS.get_status(status) do
+              case GATCore.APRS.get_status(status) do
                 {:ok, {time}, comment} ->
-                  rx_time = OGNCore.APRS.get_unix_time(time)
+                  rx_time = GATCore.APRS.get_unix_time(time)
                   status_data = %{rx_time: rx_time, cmt: comment}
 
                   status_packet =
-                    OGNCore.Packet.gen_station_status(state.id, state.server_id, status_data)
+                    GATCore.Packet.gen_station_status(state.id, state.server_id, status_data)
 
                   Tortoise.publish(state.server_id, "glidernet", status_packet, qos: 0)
 
@@ -123,7 +123,7 @@ defmodule OGNCore.Station do
 
                 _ ->
                   Logger.warning(
-                    "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: get_status not recognized: #{pkt}"
+                    "GATCore.Station #{inspect(self())} #{inspect(state.id)}: get_status not recognized: #{pkt}"
                   )
 
                   :aprs_error
@@ -131,7 +131,7 @@ defmodule OGNCore.Station do
 
             _ ->
               Logger.warning(
-                "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: aprs_message not recognized: #{pkt}"
+                "GATCore.Station #{inspect(self())} #{inspect(state.id)}: aprs_message not recognized: #{pkt}"
               )
 
               :aprs_error
@@ -139,7 +139,7 @@ defmodule OGNCore.Station do
 
         :error ->
           Logger.warning(
-            "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: get_aprs_addr() failed: #{pkt}"
+            "GATCore.Station #{inspect(self())} #{inspect(state.id)}: get_aprs_addr() failed: #{pkt}"
           )
 
           :aprs_error
@@ -159,7 +159,7 @@ defmodule OGNCore.Station do
   def handle_info(:inactive_check_exp, state) do
     if :erlang.system_time(:millisecond) - state.last_rx_time > @process_exit_time_msec do
       Logger.debug(
-        "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: process ended due to no inactivity."
+        "GATCore.Station #{inspect(self())} #{inspect(state.id)}: process ended due to no inactivity."
       )
 
       {:stop, :normal, %{}}
@@ -168,7 +168,7 @@ defmodule OGNCore.Station do
         if :erlang.system_time(:millisecond) - state.last_rx_time > @inactive_event_time_msec do
           if state.inactive_event_sent == false do
             Logger.debug(
-              "OGNCore.Station #{inspect(self())} #{inspect(state.id)}: timeout event."
+              "GATCore.Station #{inspect(self())} #{inspect(state.id)}: timeout event."
             )
 
             rx_time = DateTime.utc_now() |> DateTime.to_unix()
@@ -183,7 +183,7 @@ defmodule OGNCore.Station do
             }
 
             event_packet =
-              OGNCore.Packet.gen_station_timeout(state.id, state.server_id, event_data)
+              GATCore.Packet.gen_station_timeout(state.id, state.server_id, event_data)
 
             Tortoise.publish(state.server_id, "events", event_packet, qos: 0)
           end

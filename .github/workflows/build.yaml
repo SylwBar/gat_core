@@ -26,6 +26,6 @@ jobs:
       - name: start servers
         run: docker-compose up -d
       - name: execute tests (placholder)
-        run: echo "some netcat or tcpreply - it should play traffic from base stations and at the same time get ouput from ogn_core"
+        run: echo "some netcat or tcpreply - it should play traffic from base stations and at the same time get ouput from gat_core"
       - name: stop servers
         run: docker-compose down

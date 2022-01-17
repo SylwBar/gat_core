@@ -1,4 +1,4 @@
-defmodule OGNCore.Config do
+defmodule GATCore.Config do
   require Logger
 
   @default_core_server_port 8701
@@ -10,10 +10,10 @@ defmodule OGNCore.Config do
 
   def read_toml(toml_file) do
     try do
-      :ets.new(:ogn_core_config, [:set, :protected, :named_table])
+      :ets.new(:gat_core_config, [:set, :protected, :named_table])
       Logger.info("Reading configuration file: #{toml_file}")
       toml_config = Toml.decode_file!(toml_file)
-      :ets.insert(:ogn_core_config, {:config_file, toml_file})
+      :ets.insert(:gat_core_config, {:config_file, toml_file})
 
       # -------- CORE Config --------
       core_config = Map.get(toml_config, "Core")
@@ -29,9 +29,9 @@ defmodule OGNCore.Config do
       core_server_max_conn =
         Map.get(core_config, "server_max_conn", @default_core_server_max_conn)
 
-      :ets.insert(:ogn_core_config, {:core_server_name, core_server_name})
-      :ets.insert(:ogn_core_config, {:core_server_port, core_server_port})
-      :ets.insert(:ogn_core_config, {:core_server_max_conn, core_server_max_conn})
+      :ets.insert(:gat_core_config, {:core_server_name, core_server_name})
+      :ets.insert(:gat_core_config, {:core_server_port, core_server_port})
+      :ets.insert(:gat_core_config, {:core_server_max_conn, core_server_max_conn})
 
       # -------- APRS Config --------
 
@@ -47,16 +47,16 @@ defmodule OGNCore.Config do
       aprs_server_port = Map.get(aprs_config, "server_port", @default_aprs_server_port)
       aprs_client_id = Map.get(aprs_config, "client_id", @default_aprs_server_id)
 
-      :ets.insert(:ogn_core_config, {:aprs_server_addr, aprs_server_addr})
-      :ets.insert(:ogn_core_config, {:aprs_server_port, aprs_server_port})
-      :ets.insert(:ogn_core_config, {:aprs_client_id, aprs_client_id})
+      :ets.insert(:gat_core_config, {:aprs_server_addr, aprs_server_addr})
+      :ets.insert(:gat_core_config, {:aprs_server_port, aprs_server_port})
+      :ets.insert(:gat_core_config, {:aprs_client_id, aprs_client_id})
 
       # -------- MQTT Config --------
       mqtt_config = Map.get(toml_config, "MQTT")
       if mqtt_config == nil, do: raise("No MQTT configuration provided in configuration file")
 
       mqtt_enabled = Map.get(mqtt_config, "enabled", true)
-      :ets.insert(:ogn_core_config, {:mqtt_enabled, mqtt_enabled})
+      :ets.insert(:gat_core_config, {:mqtt_enabled, mqtt_enabled})
 
       if mqtt_enabled do
         mqtt_server_addr = Map.get(mqtt_config, "server_addr")
@@ -68,13 +68,13 @@ defmodule OGNCore.Config do
         mqtt_user_name = Map.get(mqtt_config, "user_name")
         mqtt_password = Map.get(mqtt_config, "password")
 
-        :ets.insert(:ogn_core_config, {:mqtt_server_addr, mqtt_server_addr})
-        :ets.insert(:ogn_core_config, {:mqtt_server_port, mqtt_server_port})
-        :ets.insert(:ogn_core_config, {:mqtt_user_name, mqtt_user_name})
-        :ets.insert(:ogn_core_config, {:mqtt_password, mqtt_password})
+        :ets.insert(:gat_core_config, {:mqtt_server_addr, mqtt_server_addr})
+        :ets.insert(:gat_core_config, {:mqtt_server_port, mqtt_server_port})
+        :ets.insert(:gat_core_config, {:mqtt_user_name, mqtt_user_name})
+        :ets.insert(:gat_core_config, {:mqtt_password, mqtt_password})
       end
 
-      Logger.info("OGN Core server name: #{core_server_name}, configuration OK.")
+      Logger.info("GAT Core server name: #{core_server_name}, configuration OK.")
 
       :ok
     rescue
@@ -88,20 +88,20 @@ defmodule OGNCore.Config do
   # -------- CORE Config --------
 
   def get_core_server_name() do
-    [core_server_name: core_server_name] = :ets.lookup(:ogn_core_config, :core_server_name)
+    [core_server_name: core_server_name] = :ets.lookup(:gat_core_config, :core_server_name)
 
     core_server_name
   end
 
   def get_core_server_port() do
-    [core_server_port: core_server_port] = :ets.lookup(:ogn_core_config, :core_server_port)
+    [core_server_port: core_server_port] = :ets.lookup(:gat_core_config, :core_server_port)
 
     core_server_port
   end
 
   def get_core_server_max_conn() do
     [core_server_max_conn: core_server_max_conn] =
-      :ets.lookup(:ogn_core_config, :core_server_max_conn)
+      :ets.lookup(:gat_core_config, :core_server_max_conn)
 
     core_server_max_conn
   end
@@ -109,43 +109,43 @@ defmodule OGNCore.Config do
   # -------- APRS Config --------
 
   def get_aprs_server_addr() do
-    [aprs_server_addr: server_addr] = :ets.lookup(:ogn_core_config, :aprs_server_addr)
+    [aprs_server_addr: server_addr] = :ets.lookup(:gat_core_config, :aprs_server_addr)
     server_addr
   end
 
   def get_aprs_server_port() do
-    [aprs_server_port: server_port] = :ets.lookup(:ogn_core_config, :aprs_server_port)
+    [aprs_server_port: server_port] = :ets.lookup(:gat_core_config, :aprs_server_port)
     server_port
   end
 
   def get_aprs_client_id() do
-    [aprs_client_id: client_id] = :ets.lookup(:ogn_core_config, :aprs_client_id)
+    [aprs_client_id: client_id] = :ets.lookup(:gat_core_config, :aprs_client_id)
     client_id
   end
 
   # -------- MQTT Config --------
   def get_mqtt_enabled() do
-    [mqtt_enabled: enabled] = :ets.lookup(:ogn_core_config, :mqtt_enabled)
+    [mqtt_enabled: enabled] = :ets.lookup(:gat_core_config, :mqtt_enabled)
     enabled
   end
 
   def get_mqtt_server_addr() do
-    [mqtt_server_addr: server_addr] = :ets.lookup(:ogn_core_config, :mqtt_server_addr)
+    [mqtt_server_addr: server_addr] = :ets.lookup(:gat_core_config, :mqtt_server_addr)
     server_addr
   end
 
   def get_mqtt_server_port() do
-    [mqtt_server_port: server_port] = :ets.lookup(:ogn_core_config, :mqtt_server_port)
+    [mqtt_server_port: server_port] = :ets.lookup(:gat_core_config, :mqtt_server_port)
     server_port
   end
 
   def get_mqtt_user_name() do
-    [mqtt_user_name: user_name] = :ets.lookup(:ogn_core_config, :mqtt_user_name)
+    [mqtt_user_name: user_name] = :ets.lookup(:gat_core_config, :mqtt_user_name)
     user_name
   end
 
   def get_mqtt_password() do
-    [mqtt_password: password] = :ets.lookup(:ogn_core_config, :mqtt_password)
+    [mqtt_password: password] = :ets.lookup(:gat_core_config, :mqtt_password)
     password
   end
 end

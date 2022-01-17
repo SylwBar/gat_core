@@ -1,4 +1,4 @@
-defmodule OGNCore.Packet do
+defmodule GATCore.Packet do
   @lat_lon_scale 0x800000
 
   def gen_core_keep_alive() do
