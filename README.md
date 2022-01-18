@@ -1,12 +1,17 @@
 # GAT Core Server
 
-Project related to General Aviation Tracking with Open Glider Network (OGN) connectivity.
-The main idea is to add more functionalities to OGN packet routing system which is based on APRS protocol.
+1. Project related to General Aviation tracking.
+2. GATCore is implementation of General Aviation Tracking Protocol (GATP) packet routing server.
+3. GATCore server is able to connect to Open Glider Network (OGN) servers and exchange data transparently.
+
+The main idea of GATP and GATCore is to add more functionalities to OGN packet routing system which is based on APRS protocol.
 
 Project goals:
 - propose compact protocol (GATP), better suited for aviation than APRS,
-- add features that are hard to achieve using APRS based servers: packet delays, emergency services,
+- add built-in features that are hard to achieve using APRS based servers: packet delays, emergency services,
 - allow interoperability between APRS OGN and GAT systems.
+
+GATCore is developed in Elixir with possible extensions to be written in Elixir/Erlang/C/Rust.
 
 ## Configurations
 
