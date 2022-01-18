@@ -1,12 +1,12 @@
-# GAT Core
+# GAT Core Server
 
 Project related to General Aviation Tracking with Open Glider Network (OGN) connectivity.
 The main idea is to add more functionalities to OGN packet routing system which is based on APRS protocol.
 
 Project goals:
-- propose more compact format, better suited for aviation, than APRS,
+- propose compact protocol (GATP), better suited for aviation than APRS,
 - add features that are hard to achieve using APRS based servers: packet delays, emergency services,
-- allow interoperability between APRS OGN and GAT Core systems.
+- allow interoperability between APRS OGN and GAT systems.
 
 ## Configurations
 
