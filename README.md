@@ -1,8 +1,8 @@
 # GAT Core Server
 
-1. Project related to General Aviation tracking.
-2. GATCore is implementation of routing server for General Aviation Tracking Protocol (GATP).
-3. GATCore server is able to connect to Open Glider Network (OGN) servers and exchange data transparently.
+Project related to General Aviation tracking.
+* GATCore is implementation of routing server for General Aviation Tracking Protocol (GATP).
+* GATCore server is able to connect to Open Glider Network (OGN) servers and exchange data transparently.
 
 The main idea of GATP and GATCore is to add more functionalities to OGN packet routing system which is based on APRS protocol.
 
