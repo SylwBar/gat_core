@@ -1,9 +1,9 @@
-defmodule OGNCore.MixProject do
+defmodule GATCore.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :ogn_core,
+      app: :gat_core,
       version: "0.1.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
@@ -15,7 +15,7 @@ defmodule OGNCore.MixProject do
   def application do
     [
       extra_applications: [:logger, :runtime_tools],
-      mod: {OGNCore.Application, []}
+      mod: {GATCore.Application, []}
     ]
   end
 

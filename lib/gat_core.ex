@@ -1,4 +1,4 @@
-defmodule OGNCore do
+defmodule GATCore do
   def stations() do
     station_list =
       Registry.select(Registry.Stations, [
@@ -10,7 +10,7 @@ defmodule OGNCore do
   end
 
   def print_station(station_id) do
-    OGNCore.Station.print_state_by_id(station_id)
+    GATCore.Station.print_state_by_id(station_id)
   end
 
   def objects() do
@@ -30,7 +30,7 @@ defmodule OGNCore do
 
   def print_object(addr_type, addr_hex_str) do
     {:ok, addr_bin} = Base.decode16(addr_hex_str)
-    OGNCore.OGNObject.print_state_by_id({addr_type, addr_bin})
+    GATCore.OGNObject.print_state_by_id({addr_type, addr_bin})
   end
 
   def set_object_delay(addr_type, addr_hex_str, delay_sec) do
@@ -44,7 +44,7 @@ defmodule OGNCore do
       IO.puts("Entry removed from DETS.")
     end
 
-    case OGNCore.OGNObject.set_delay_by_id({addr_type, addr_bin}, delay_sec) do
+    case GATCore.OGNObject.set_delay_by_id({addr_type, addr_bin}, delay_sec) do
       :no_object -> IO.puts("Object not tracked yet")
       :ok -> IO.puts("Object tracked and updated")
     end
@@ -52,7 +52,7 @@ defmodule OGNCore do
 
   def get_object_delay(addr_type, addr_hex_str) do
     {:ok, addr_bin} = Base.decode16(addr_hex_str)
-    OGNCore.OGNObject.get_delay_by_id({addr_type, addr_bin})
+    GATCore.OGNObject.get_delay_by_id({addr_type, addr_bin})
   end
 
   def print_delays() do

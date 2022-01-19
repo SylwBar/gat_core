@@ -1,4 +1,4 @@
-defmodule OGNCore.APRSConnection do
+defmodule GATCore.APRSConnection do
   @reconnect_timer_msec 10_000
   @client_keep_alive_timer_msec 120_000
   @server_keep_alive_timer_msec 60_000
@@ -10,9 +10,9 @@ defmodule OGNCore.APRSConnection do
   # ----- APRS Connection process init. function -----
 
   def init([]) do
-    server_addr = OGNCore.Config.get_aprs_server_addr()
-    server_port = OGNCore.Config.get_aprs_server_port()
-    client_id = OGNCore.Config.get_aprs_client_id()
+    server_addr = GATCore.Config.get_aprs_server_addr()
+    server_port = GATCore.Config.get_aprs_server_port()
+    client_id = GATCore.Config.get_aprs_client_id()
 
     state = %{
       server_addr: server_addr,
@@ -46,9 +46,9 @@ defmodule OGNCore.APRSConnection do
           case :gen_tcp.connect(server_ip4, state.server_port, [:binary, active: true]) do
             {:ok, socket} ->
               Logger.info("APRSConnection: connected to APRS server")
-              ver = Application.spec(:ogn_core, :vsn) |> to_string()
+              ver = Application.spec(:gat_core, :vsn) |> to_string()
 
-              login = "user CORE-#{state.client_id} pass 25320 vers OGNCore #{ver}\r\n"
+              login = "user CORE-#{state.client_id} pass 25320 vers GATCore #{ver}\r\n"
 
               :ok = :gen_tcp.send(socket, login)
 
@@ -140,14 +140,14 @@ defmodule OGNCore.APRSConnection do
   defp handle_packet(<<"#", _::bytes>> = cmt), do: handle_comment(cmt)
 
   defp handle_packet(pkt) do
-    case OGNCore.APRS.get_source_id(pkt) do
+    case GATCore.APRS.get_source_id(pkt) do
       {:ogn_station, id} ->
-        {:ok, pid} = OGNCore.Station.get_pid(id)
-        OGNCore.Station.send_aprs(pid, pkt)
+        {:ok, pid} = GATCore.Station.get_pid(id)
+        GATCore.Station.send_aprs(pid, pkt)
 
       {:ogn_object, id, type} ->
-        {:ok, pid} = OGNCore.OGNObject.get_pid(id, type)
-        OGNCore.OGNObject.send_aprs(pid, pkt)
+        {:ok, pid} = GATCore.OGNObject.get_pid(id, type)
+        GATCore.OGNObject.send_aprs(pid, pkt)
 
       :unknown ->
         :ok

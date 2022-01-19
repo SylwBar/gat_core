@@ -1,4 +1,4 @@
-defmodule OGNCore.ServerTCP do
+defmodule GATCore.ServerTCP do
   @login_timeout_ms 10_000
   use GenServer
   require Logger
@@ -19,7 +19,7 @@ defmodule OGNCore.ServerTCP do
   # ----- ServerTCP process init. function -----
   @impl true
   def init([]) do
-    server_port = OGNCore.Config.get_core_server_port()
+    server_port = GATCore.Config.get_core_server_port()
     {:ok, listen_socket} = :gen_tcp.listen(server_port, [:binary, active: false, packet: 2])
     spawn(fn -> acceptor(listen_socket) end)
     state = %{server_port: server_port, listen_socket: listen_socket}
@@ -35,7 +35,7 @@ defmodule OGNCore.ServerTCP do
         handle(socket)
 
       error ->
-        Logger.error("OGNCore.ServerTCP/acceptor: #{inspect(error)}")
+        Logger.error("GATCore.ServerTCP/acceptor: #{inspect(error)}")
     end
   end
 
@@ -48,12 +48,12 @@ defmodule OGNCore.ServerTCP do
             handle_login_request(msg_body, socket)
 
           error ->
-            Logger.debug("OGNCore.ServerTCP/handle: CBOR error #{inspect(error)}")
+            Logger.debug("GATCore.ServerTCP/handle: CBOR error #{inspect(error)}")
             :error
         end
 
       {:error, error} ->
-        Logger.debug("OGNCore.ServerTCP/handle: receive error #{inspect(error)}")
+        Logger.debug("GATCore.ServerTCP/handle: receive error #{inspect(error)}")
         :error
     end
   end
@@ -63,37 +63,37 @@ defmodule OGNCore.ServerTCP do
     object_id = Map.get(msg_body, 1)
 
     if object_id == nil do
-      Logger.debug("OGNCore.ServerTCP/handle_cbor: no object_id (1)")
+      Logger.debug("GATCore.ServerTCP/handle_cbor: no object_id (1)")
     else
       tuple_id = :erlang.list_to_tuple(object_id)
-      server_name = OGNCore.Config.get_core_server_name()
+      server_name = GATCore.Config.get_core_server_name()
 
-      case OGNCore.ServerAuth.check_auth(tuple_id) do
+      case GATCore.ServerAuth.check_auth(tuple_id) do
         :ok ->
-          Logger.info("OGNCore.ServerTCP accepted login: #{inspect(tuple_id)}")
+          Logger.info("GATCore.ServerTCP accepted login: #{inspect(tuple_id)}")
 
           case Registry.lookup(Registry.ConnectionsTCP, tuple_id) do
             [] ->
               :ok
 
             [{existing_conn_pid, _}] ->
-              OGNCore.ConnectionTCP.disconnect(existing_conn_pid)
+              GATCore.ConnectionTCP.disconnect(existing_conn_pid)
           end
 
-          {:ok, connection_pid} = OGNCore.ConnectionTCP.start(tuple_id, socket)
-          reply_packet = OGNCore.Packet.gen_core_login_reply(server_name, :ok)
+          {:ok, connection_pid} = GATCore.ConnectionTCP.start(tuple_id, socket)
+          reply_packet = GATCore.Packet.gen_core_login_reply(server_name, :ok)
           :gen_tcp.send(socket, reply_packet)
           :ok = :gen_tcp.controlling_process(socket, connection_pid)
 
         :full ->
-          Logger.info("OGNCore.ServerTCP full login: #{inspect(tuple_id)}")
-          reply_packet = OGNCore.Packet.gen_core_login_reply(server_name, :full)
+          Logger.info("GATCore.ServerTCP full login: #{inspect(tuple_id)}")
+          reply_packet = GATCore.Packet.gen_core_login_reply(server_name, :full)
           :gen_tcp.send(socket, reply_packet)
           :full
 
         :no_auth ->
-          Logger.info("OGNCore.ServerTCP no_auth login: #{inspect(tuple_id)}")
-          reply_packet = OGNCore.Packet.gen_core_login_reply(server_name, :no_auth)
+          Logger.info("GATCore.ServerTCP no_auth login: #{inspect(tuple_id)}")
+          reply_packet = GATCore.Packet.gen_core_login_reply(server_name, :no_auth)
           :gen_tcp.send(socket, reply_packet)
           :no_auth
       end

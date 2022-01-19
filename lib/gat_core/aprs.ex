@@ -1,4 +1,4 @@
-defmodule OGNCore.APRS do
+defmodule GATCore.APRS do
   import NimbleParsec
 
   # -------- APRS address header --------

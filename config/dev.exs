@@ -1,6 +1,6 @@
 import Config
 
-config :ogn_core,
+config :gat_core,
   env: "Dev",
   toml_config: "config/dev.toml"
 

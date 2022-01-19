@@ -1,4 +1,4 @@
-defmodule OGNCore.OGNObject do
+defmodule GATCore.OGNObject do
   use GenServer
   require Logger
 
@@ -92,7 +92,7 @@ defmodule OGNCore.OGNObject do
 
     state = %{
       id: id,
-      server_id: OGNCore.Config.get_core_server_name(),
+      server_id: GATCore.Config.get_core_server_name(),
       type: type,
       last_rx_time: last_rx_time,
       inactive_timer_ref: inactive_timer_ref,
@@ -115,13 +115,13 @@ defmodule OGNCore.OGNObject do
   @impl true
   def handle_cast({:aprs, pkt}, state) do
     new_state =
-      case OGNCore.APRS.get_aprs_addr(pkt) do
+      case GATCore.APRS.get_aprs_addr(pkt) do
         {:ok, addr_list, aprs_message} ->
           case aprs_message do
             <<"/", pos_ts::bytes>> ->
-              case OGNCore.APRS.get_pos_w_timest_cse_spd(pos_ts) do
+              case GATCore.APRS.get_pos_w_timest_cse_spd(pos_ts) do
                 {:ok, {time, lat, lon, alt, cse, spd, _s1, _s2}, comment} ->
-                  rx_time = OGNCore.APRS.get_unix_time(time)
+                  rx_time = GATCore.APRS.get_unix_time(time)
                   rx_station_id = List.last(addr_list)
 
                   position_data = %{
@@ -136,14 +136,14 @@ defmodule OGNCore.OGNObject do
 
                   if state.delay == 0 do
                     position_packet =
-                      OGNCore.Packet.gen_object_position(state.id, rx_station_id, position_data)
+                      GATCore.Packet.gen_object_position(state.id, rx_station_id, position_data)
 
                     Tortoise.publish(state.server_id, "glidernet", position_packet, qos: 0)
                   else
                     dly_position_data = Map.put(position_data, :delay, state.delay)
 
                     dly_position_packet =
-                      OGNCore.Packet.gen_object_position(
+                      GATCore.Packet.gen_object_position(
                         state.id,
                         rx_station_id,
                         dly_position_data
@@ -173,7 +173,7 @@ defmodule OGNCore.OGNObject do
 
                 _ ->
                   Logger.warning(
-                    "OGNCore.OGNObject #{inspect(self())} #{inspect(state.id)}: get_pos_w_timest_cse_spd not recognized: #{pkt}"
+                    "GATCore.OGNObject #{inspect(self())} #{inspect(state.id)}: get_pos_w_timest_cse_spd not recognized: #{pkt}"
                   )
 
                   :aprs_error
@@ -181,7 +181,7 @@ defmodule OGNCore.OGNObject do
 
             _ ->
               Logger.warning(
-                "OGNCore.OGNObject #{inspect(self())} #{inspect(state.id)}: aprs_message not recognized: #{pkt}"
+                "GATCore.OGNObject #{inspect(self())} #{inspect(state.id)}: aprs_message not recognized: #{pkt}"
               )
 
               :aprs_error
@@ -189,7 +189,7 @@ defmodule OGNCore.OGNObject do
 
         :error ->
           Logger.warning(
-            "OGNCore.OGNObject #{inspect(self())} #{inspect(state.id)}: get_aprs_addr() failed: #{pkt}"
+            "GATCore.OGNObject #{inspect(self())} #{inspect(state.id)}: get_aprs_addr() failed: #{pkt}"
           )
 
           :aprs_error
@@ -209,7 +209,7 @@ defmodule OGNCore.OGNObject do
   def handle_info(:inactive_check_exp, state) do
     if :erlang.system_time(:millisecond) - state.last_rx_time > @process_exit_time_msec do
       Logger.debug(
-        "OGNCore.OGNObject #{inspect(self())} #{inspect(state.id)}: process ended due to no inactivity."
+        "GATCore.OGNObject #{inspect(self())} #{inspect(state.id)}: process ended due to no inactivity."
       )
 
       {:stop, :normal, %{}}
@@ -218,7 +218,7 @@ defmodule OGNCore.OGNObject do
         if :erlang.system_time(:millisecond) - state.last_rx_time > @inactive_event_time_msec do
           if state.inactive_event_sent == false do
             Logger.debug(
-              "OGNCore.OGNObject #{inspect(self())} #{inspect(state.id)}: timeout event."
+              "GATCore.OGNObject #{inspect(self())} #{inspect(state.id)}: timeout event."
             )
 
             rx_time = DateTime.utc_now() |> DateTime.to_unix()
@@ -233,7 +233,7 @@ defmodule OGNCore.OGNObject do
             }
 
             event_packet =
-              OGNCore.Packet.gen_object_timeout(state.id, state.rx_station_id, event_data)
+              GATCore.Packet.gen_object_timeout(state.id, state.rx_station_id, event_data)
 
             Tortoise.publish(state.server_id, "events", event_packet, qos: 0)
           end
