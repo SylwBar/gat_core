@@ -163,6 +163,10 @@ defmodule GATCore.APRSConnection do
     send(self(), :restart_server_ka_timer)
   end
 
+  defp handle_comment(<<"# ognsim", _::bytes>> = _cmt) do
+    send(self(), :restart_server_ka_timer)
+  end
+
   defp handle_comment(<<"#", _::bytes>> = cmt) do
     Logger.info("APRSConnection: #{cmt}")
   end
